@@ -1,22 +1,23 @@
 import React, { Component } from 'react';
 
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
-
 import axios from 'axios';
 
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
 
-export default class CreateExercise extends Component {
+export default class ExerciseForm extends Component {
   constructor(props) {
-    super();
+    super(props);
 
     this.state = {
       username: '',
       description: '',
       duration: 0,
       date: new Date(),
-      users: []
-    };
+      users: [],
+      currentUserId: this.props.match.params.id,
+      type: this.props.match.params.type
+    }
 
     this.onChangeUsername = this.onChangeUsername.bind(this);
     this.onChangeDescription = this.onChangeDescription.bind(this);
@@ -26,41 +27,73 @@ export default class CreateExercise extends Component {
   }
 
   componentDidMount() {
-    axios.get('https://tranquil-ravine-81570.herokuapp.com/users')
-      .then(res => {
-        if (res.data.length) {
-          const users = res.data.map(user => user.username);
+
+    this.state.type === 'edit' &&
+      this.state.currentUserId &&
+      this.getExerciseById(this.state.currentUserId).then(() => this.getUsers());
+
+    this.getUsers();
+  }
+
+  getExerciseById(id) {
+    return axios.get('https://tranquil-ravine-81570.herokuapp.com/exercises/' + id)
+      .then(response => {
+        this.setState({
+          username: response.data.username,
+          description: response.data.description,
+          duration: response.data.duration,
+          date: new Date(response.data.date)
+        })
+      })
+      .catch((error) => console.log(error));
+  }
+
+  getUsers() {
+    return axios.get('https://tranquil-ravine-81570.herokuapp.com/users/')
+      .then(response => {
+        if (response.data.length > 0) {
+          const users = response.data.map(user => user.username);
           this.setState({
             users: users,
-            username: users[0]
-          },
-            console.log(this.state.users));
+            username: this.state.username ? this.state.username : users[0]
+          });
         }
-      });
+      })
+      .catch((error) => console.log(error));
+  }
+
+  addExercise(exercise) {
+    return axios.post('https://tranquil-ravine-81570.herokuapp.com/exercises/add', exercise)
+      .then(res => console.log(res.data)).catch(error => console.log(error));
+  }
+
+  updateExercise(id, exercise) {
+    return axios.post('https://tranquil-ravine-81570.herokuapp.com/exercises/update/' + id, exercise)
+      .then(res => console.log(res.data));
   }
 
   onChangeUsername(e) {
     this.setState({
       username: e.target.value
-    });
+    })
   }
 
   onChangeDescription(e) {
     this.setState({
       description: e.target.value
-    });
+    })
   }
 
   onChangeDuration(e) {
     this.setState({
       duration: e.target.value
-    });
+    })
   }
 
   onChangeDate(date) {
     this.setState({
       date: date
-    });
+    })
   }
 
   onSubmit(e) {
@@ -75,16 +108,17 @@ export default class CreateExercise extends Component {
 
     console.log(exercise);
 
-    axios.post('https://tranquil-ravine-81570.herokuapp.com/exercises/add', exercise)
-      .then(res => console.log(res.data));
+    const submitPromise = this.state.type === 'edit' ?
+      this.updateExercise(this.state.currentUserId, exercise) :
+      this.addExercise(exercise);
 
-    window.location = '/';
+    submitPromise.then(() => this.props.history.push('/'));
   }
 
   render() {
     return (
       <div>
-        <h3>Create New Exercise Log</h3>
+        <h3>{`${this.state.type} Exercise`}</h3>
         <form onSubmit={this.onSubmit}>
           <div className="form-group">
             <label>Username: </label>
@@ -115,7 +149,7 @@ export default class CreateExercise extends Component {
           <div className="form-group">
             <label>Duration (in minutes): </label>
             <input
-              type="number"
+              type="text"
               className="form-control"
               value={this.state.duration}
               onChange={this.onChangeDuration}
@@ -132,7 +166,7 @@ export default class CreateExercise extends Component {
           </div>
 
           <div className="form-group">
-            <input type="submit" value="Create Exercise Log" className="btn btn-primary" />
+            <button type="submit" className="btn btn-primary">{`${this.state.type} Exercise`}</button>
           </div>
         </form>
       </div>

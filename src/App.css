@@ -13,6 +13,7 @@ body {
 
 h3 {
   margin-bottom: 1.5rem;
+  text-transform: capitalize;
 }
 
 main {
@@ -25,6 +26,10 @@ main {
   background: #222c35;
   overflow: hidden;
   box-shadow: 0 3px 15px #00000038;
+}
+
+form button {
+  text-transform: capitalize;
 }
 
 .table .btn {

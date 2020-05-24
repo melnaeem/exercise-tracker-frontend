@@ -1,20 +1,21 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 
-import { useHistory } from "react-router-dom";
+import { useHistory } from 'react-router-dom';
 
 import axios from 'axios';
 
+
 const Exercise = props => {
-  let history = useHistory();
+  const history = useHistory();
   return (
-    <tr className="exercise" onClick={() => { history.push("/edit/" + props.exercise._id) }}>
+    <tr className="exercise" onClick={() => { history.push(`/exercises/edit/${props.exercise._id}`) }}>
       <td>{props.exercise.username}</td>
       <td>{props.exercise.description}</td>
       <td>{props.exercise.duration}</td>
       <td>{props.exercise.date.substring(0, 10)}</td>
       <td>
-        <Link className="btn btn-primary px-1 py-0 mr-2" to={"/edit/" + props.exercise._id}>edit</Link>
+        <Link className="btn btn-primary px-1 py-0 mr-2" to={`/exercises/edit/${props.exercise._id}`}>edit</Link>
         <button className="btn btn-danger px-1 py-0" onClick={(e) => { props.deleteExercise(props.exercise._id, e) }}>delete</button>
       </td>
     </tr>
@@ -33,7 +34,9 @@ export default class ExercisesList extends Component {
   componentDidMount() {
     axios.get('https://tranquil-ravine-81570.herokuapp.com/exercises/')
       .then(response => {
-        this.setState({ exercises: response.data })
+        let exerciseList = response.data;
+        exerciseList = exerciseList.sort((exerciseA, exerciseB) => new Date(exerciseA.date) - new Date(exerciseB.date));
+        this.setState({ exercises: exerciseList })
       })
       .catch((error) => {
         console.log(error);
