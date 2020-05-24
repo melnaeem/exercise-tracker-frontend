@@ -15,7 +15,7 @@ const Exercise = props => {
       <td>{props.exercise.date.substring(0, 10)}</td>
       <td>
         <Link className="btn btn-primary px-1 py-0 mr-2" to={"/edit/" + props.exercise._id}>edit</Link>
-        <button className="btn btn-danger px-1 py-0" onClick={() => { props.deleteExercise(props.exercise._id) }}>delete</button>
+        <button className="btn btn-danger px-1 py-0" onClick={(e) => { props.deleteExercise(props.exercise._id, e) }}>delete</button>
       </td>
     </tr>
   )
@@ -40,7 +40,9 @@ export default class ExercisesList extends Component {
       })
   }
 
-  deleteExercise(id) {
+  deleteExercise(id, e) {
+    e.stopPropagation();
+
     axios.delete('https://tranquil-ravine-81570.herokuapp.com/exercises/' + id)
       .then(response => { console.log(response.data) });
 
